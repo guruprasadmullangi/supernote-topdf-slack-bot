@@ -1,0 +1,1 @@
+git remote add origin https://github.com/guruprasadmullangi/supernote-topdf-slack-bot.gitsa
