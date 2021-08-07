@@ -1,13 +1,15 @@
 import os
 import logging
+import dropbox
 import re
-from datetime import datetime
 import pdfkit
+from datetime import datetime
 from os.path import join, dirname
 from dotenv import load_dotenv
 from slack_bolt import App
-from transfer_data import TransferData
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from dropbox.files import WriteMode
+from dropbox.exceptions import ApiError, AuthError
 
 dotenv_path = join(dirname(__file__), '.\\.env')
 load_dotenv(dotenv_path)
@@ -25,24 +27,24 @@ app = App(token=SLACK_BOT_TOKEN)
 def help(message, say):
     say(f"Hello <@{message['user']}>")
 
-@app.message(re.compile('^url (.*)$', re.IGNORECASE))
-def url(say, context, logger):
-    url = context['matches'][0]
-    url_correct = url[1:-1]
-    transferData = TransferData(DROPBOX_ACCESS_TOKEN)
+@app.command('/url')
+def url(ack, say, command):
+    ack()
+    url = command['text']
+    logging.info('\n\n'+url+'\n\n')
+    dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
     filename = 'bot_' + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S')) + '.pdf'
     file_from = filename
-    logger.info(file_from)
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-    options = {'javascript-delay':5000}
-    pdfkit.from_url(url_correct, file_from, configuration=config, options=options)
-    
-    file_to = f'/bot/{filename}'
-
-    if transferData.upload_file(file_from=file_from, file_to=file_to):
-        say('done')
-    else:
-        say('fail')
+    options = {'javascript-delay':200}
+    if pdfkit.from_url(url, file_from, configuration=config, options=options):
+        file_to = f'/bot/{filename}'
+        with open(file_from, 'rb') as f:
+            if dbx.files_upload(f.read(), file_to, mode=WriteMode('overwrite')):
+                #if dbx.files_move(file_to, '/../../Supernote/bot'):
+                say('File uploaded sucessfully')
+            else:
+                say('Upload failed')
     
 @app.event("message")
 def handle_message_events(body, logger):
