@@ -51,17 +51,21 @@ def url(ack, say, command, logger):
         say(f"Oops!{sys.exc_info()[0]}occurred.")
 
 @app.command('/delete')
-def url(ack, say, command, logger):
+def url(ack, say, logger):
     dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
-    ack('deleteting files...')
+    ack('Deleting files...')
     try:
         response = dbx.files_list_folder('ns:9871776400/Supernote/EXPORT/bot/')
-        logger.info('\n\n')
-        logger.info(response)
+        #logger.info('\n\n')
+        #logger.info(response)
         for entry in response.entries:
-            logger.info(entry.name)
+            #logger.info(entry.name)
             if isinstance(entry, dropbox.files.FileMetadata) and entry.name.startswith('bot_') and entry.name.endswith('.pdf'):
-                dbx.files_delete_v2('ns:9871776400/Supernote/EXPORT/bot/'+entry.name)
+                dbx.files_delete_v2(f'ns:9871776400/Supernote/EXPORT/bot/{entry.name}')
+        if not dbx.files_list_folder('ns:9871776400/Supernote/EXPORT/bot/').entries:
+            say(f'Deleted all files')
+        else:
+            say(f'Trouble deleting files')
     except:
         logger.info(sys.exc_info())
         say(f"Oops!{sys.exc_info()[0]}occurred.")
