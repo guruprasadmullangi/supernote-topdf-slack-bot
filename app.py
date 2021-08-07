@@ -26,7 +26,8 @@ app = App(token=SLACK_BOT_TOKEN)
 
 @app.command('/help')
 def help(ack, command):
-    ack(f"Hello <@{command['user_id']}>")
+    ack(f"Hello <@{command['user_id']}>\n\n"\
+         "Use `/url <URL>` command to convert a webpage to pdf and upload to your Dropbox to read it on your Supernote devices.")
 
 @app.command('/url')
 def url(ack, say, command, logger):
