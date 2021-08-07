@@ -27,7 +27,8 @@ app = App(token=SLACK_BOT_TOKEN)
 @app.command('/help')
 def help(ack, command):
     ack(f"Hello <@{command['user_id']}>\n\n"\
-         "Use `/url <URL>` command to convert a webpage to pdf and upload to your Dropbox to read it on your Supernote devices.")
+         "Use `/url <URL>` command to convert a webpage to pdf and upload to Dropbox to easily read on your Supernote devices.\n\n"\
+         "Use `/delete` command to delete all files from `Dropbox/Supernote/Export/bot` folder in Dropbox")
 
 @app.command('/url')
 def url(ack, say, command, logger):
@@ -43,9 +44,9 @@ def url(ack, say, command, logger):
             file_to = f'ns:9871776400/Supernote/EXPORT/bot/{filename}'
             with open(file_from, 'rb') as f:
                 if dbx.files_upload(f.read(), file_to, mode=WriteMode('overwrite')):
-                    say('File uploaded sucessfully')
+                    say('Pdf ready to read on your device.')
                 else:
-                    say('Upload failed')
+                    say('Job failed.')
     except:
         logger.info(sys.exc_info())
         say(f"Oops!{sys.exc_info()[0]}occurred.")
@@ -63,9 +64,9 @@ def url(ack, say, logger):
             if isinstance(entry, dropbox.files.FileMetadata) and entry.name.startswith('bot_') and entry.name.endswith('.pdf'):
                 dbx.files_delete_v2(f'ns:9871776400/Supernote/EXPORT/bot/{entry.name}')
         if not dbx.files_list_folder('ns:9871776400/Supernote/EXPORT/bot/').entries:
-            say(f'Deleted all files')
+            say(f'Deleted all bot files.')
         else:
-            say(f'Trouble deleting files')
+            say(f'Trouble deleting files.')
     except:
         logger.info(sys.exc_info())
         say(f"Oops!{sys.exc_info()[0]}occurred.")
