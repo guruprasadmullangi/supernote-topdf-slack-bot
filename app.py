@@ -2,6 +2,7 @@ import os
 import logging
 import dropbox
 import re
+import sys
 import pdfkit
 from datetime import datetime
 from os.path import join, dirname
@@ -24,32 +25,29 @@ SLACK_APP_TOKEN = os.environ.get('SLACK_APP_TOKEN')
 app = App(token=SLACK_BOT_TOKEN)
 
 @app.command('/help')
-def help(ack, say, command):
-    ack()
-    say(f"Hello <@{command['user']}>")
+def help(ack, command):
+    ack(f"Hello <@{command['user_id']}>")
 
 @app.command('/url')
-def url(ack, say, command):
-    ack()
+def url(ack, say, command, logger):
     url = command['text']
-    logging.info('\n\n'+url+'\n\n')
     dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
     filename = 'bot_' + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S')) + '.pdf'
     file_from = filename
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
     options = {'javascript-delay':200}
-    if pdfkit.from_url(url, file_from, configuration=config, options=options):
-        file_to = f'/bot/{filename}'
-        with open(file_from, 'rb') as f:
-            if dbx.files_upload(f.read(), file_to, mode=WriteMode('overwrite')):
-                #if dbx.files_move(file_to, '/../../Supernote/bot'):
-                say('File uploaded sucessfully')
-            else:
-                say('Upload failed')
-    
-@app.event("message")
-def handle_message_events(body, logger):
-    logger.info(body)
+    ack('working on it...')
+    try:
+        if pdfkit.from_url(url, file_from, configuration=config, options=options):
+            file_to = f'ns:9871776400/Supernote/Note/{filename}'
+            with open(file_from, 'rb') as f:
+                if dbx.files_upload(f.read(), file_to, mode=WriteMode('overwrite')):
+                    say('File uploaded sucessfully')
+                else:
+                    say('Upload failed')
+    except:
+        logger.info(sys.exc_info())
+        say(f"Oops!{sys.exc_info()[0]}occurred.")
 
 if __name__ == '__main__':
     SocketModeHandler(app, SLACK_APP_TOKEN).start()
