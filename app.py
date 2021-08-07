@@ -23,9 +23,10 @@ SLACK_APP_TOKEN = os.environ.get('SLACK_APP_TOKEN')
 
 app = App(token=SLACK_BOT_TOKEN)
 
-@app.message(re.compile('^help$', re.IGNORECASE))
-def help(message, say):
-    say(f"Hello <@{message['user']}>")
+@app.command('/help')
+def help(ack, say, command):
+    ack()
+    say(f"Hello <@{command['user']}>")
 
 @app.command('/url')
 def url(ack, say, command):
