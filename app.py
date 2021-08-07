@@ -40,12 +40,28 @@ def url(ack, say, command, logger):
     ack('working on it...')
     try:
         if pdfkit.from_url(url, file_from, configuration=config, options=options):
-            file_to = f'ns:9871776400/Supernote/Note/{filename}'
+            file_to = f'ns:9871776400/Supernote/EXPORT/bot/{filename}'
             with open(file_from, 'rb') as f:
                 if dbx.files_upload(f.read(), file_to, mode=WriteMode('overwrite')):
                     say('File uploaded sucessfully')
                 else:
                     say('Upload failed')
+    except:
+        logger.info(sys.exc_info())
+        say(f"Oops!{sys.exc_info()[0]}occurred.")
+
+@app.command('/delete')
+def url(ack, say, command, logger):
+    dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+    ack('deleteting files...')
+    try:
+        response = dbx.files_list_folder('ns:9871776400/Supernote/EXPORT/bot/')
+        logger.info('\n\n')
+        logger.info(response)
+        for entry in response.entries:
+            logger.info(entry.name)
+            if isinstance(entry, dropbox.files.FileMetadata) and entry.name.startswith('bot_') and entry.name.endswith('.pdf'):
+                dbx.files_delete_v2('ns:9871776400/Supernote/EXPORT/bot/'+entry.name)
     except:
         logger.info(sys.exc_info())
         say(f"Oops!{sys.exc_info()[0]}occurred.")
