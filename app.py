@@ -12,12 +12,12 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 
-dotenv_path = join(dirname(__file__), '.\\.env')
+dotenv_path = join(dirname(__file__), './.env')
 load_dotenv(dotenv_path)
 
 logging.basicConfig(level=logging.DEBUG)
 
-path_wkhtmltopdf = 'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe'
+path_wkhtmltopdf = '/usr/local/bin/wkhtmltopdf'
 DROPBOX_ACCESS_TOKEN = os.environ.get('DROPBOX_ACCESS_TOKEN')
 SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
 SLACK_APP_TOKEN = os.environ.get('SLACK_APP_TOKEN')
@@ -37,7 +37,7 @@ def url(ack, say, command, logger):
     filename = 'bot_' + str(datetime.now().strftime('%Y_%m_%d_%H_%M_%S')) + '.pdf'
     file_from = filename
     config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-    options = {'javascript-delay':200}
+    options = {'javascript-delay':1000}
     ack('working on it...')
     try:
         if pdfkit.from_url(url, file_from, configuration=config, options=options):
